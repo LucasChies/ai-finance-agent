@@ -35,10 +35,13 @@ streamlit run src/app.py
 ## Configurar o Azure AI Foundry
 
 1. No portal do Azure, crie ou abra um recurso de Azure OpenAI / Foundry e implante um modelo de chat.
-2. Copie `.env.example` para `.env` e preencha endpoint, chave e nome da implantação.
-3. O arquivo `.env` está no `.gitignore`. Nunca commite chaves.
+2. Copie `.env.example` para `.env`, preencha o endpoint e o nome da implantação.
+3. A chave da API vem de um destes lugares:
+   - **Key Vault (recomendado):** defina `KEY_VAULT_URL` e guarde a chave como segredo `AZURE-OPENAI-API-KEY`. Rode `az login` antes, e sua conta precisa da função **Key Vault Secrets User**.
+   - **Local:** defina `AZURE_OPENAI_API_KEY` no `.env`.
+4. O arquivo `.env` está no `.gitignore`. Nunca commite chaves.
 
-Sem essas variáveis, a interface roda normalmente e só desativa o botão de explicação.
+Se o Key Vault estiver configurado, ele tem prioridade sobre `AZURE_OPENAI_API_KEY`. Sem essas variáveis, a interface roda normalmente e só desativa o botão de explicação.
 
 ## Formato do CSV
 
@@ -60,6 +63,7 @@ Sem essas variáveis, a interface roda normalmente e só desativa o botão de ex
 
 ```
 src/tools.py          regras de detecção (determinísticas, testadas)
+src/config.py         leitura de configuração (chave do Key Vault ou do ambiente)
 src/agent.py          agente que usa o Azure AI Foundry
 src/app.py            interface Streamlit
 data/generate_sample.py  gera transações sintéticas com anomalias plantadas

@@ -4,7 +4,6 @@ Execute com:
     streamlit run src/app.py
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -12,6 +11,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.config import is_configured  # noqa: E402
 from src.tools import load_transactions, run_all_rules  # noqa: E402
 
 st.set_page_config(page_title="Detecção de anomalias", layout="wide")
@@ -51,8 +51,8 @@ else:
     st.dataframe(alerts, use_container_width=True)
 
 st.subheader("Explicação com IA")
-if not all(os.getenv(v) for v in ("AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_DEPLOYMENT")):
-    st.info("Para ativar, configure as variáveis do Azure AI Foundry (veja .env.example).")
+if not is_configured():
+    st.info("Para ativar, configure o Azure AI Foundry (veja .env.example e a seção de Key Vault no README).")
 elif st.button("Explicar alertas"):
     from src.agent import explain_alerts
 

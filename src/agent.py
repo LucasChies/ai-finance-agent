@@ -4,10 +4,11 @@ O modelo não calcula nada por conta própria: ele decide chamar a ferramenta
 `run_anomaly_rules`, que executa as regras determinísticas de tools.py, e
 depois explica os alertas em linguagem clara.
 
-Variáveis de ambiente (veja .env.example):
+Configuração (veja .env.example e src/config.py):
     AZURE_OPENAI_ENDPOINT     https://<seu-recurso>.openai.azure.com/
-    AZURE_OPENAI_API_KEY      chave do recurso
     AZURE_OPENAI_DEPLOYMENT   nome da implantação do modelo no Foundry
+    KEY_VAULT_URL             https://<seu-kv>.vault.azure.net/ (chave vem do Key Vault)
+    AZURE_OPENAI_API_KEY      alternativa à anterior, para uso local
     AZURE_OPENAI_API_VERSION  versão da API (opcional)
 """
 
@@ -18,6 +19,7 @@ import os
 
 import pandas as pd
 
+from src.config import get_api_key, missing_settings
 from src.tools import run_all_rules
 
 SYSTEM_PROMPT = (
@@ -43,12 +45,12 @@ MAX_ALERTS_IN_CONTEXT = 50
 def _client():
     from openai import AzureOpenAI
 
-    missing = [v for v in ("AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_DEPLOYMENT") if not os.getenv(v)]
+    missing = missing_settings()
     if missing:
-        raise RuntimeError(f"Configure as variáveis de ambiente: {', '.join(missing)}")
+        raise RuntimeError(f"Configure: {', '.join(missing)}")
     return AzureOpenAI(
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        api_key=get_api_key(),
         api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-10-21"),
     )
 
